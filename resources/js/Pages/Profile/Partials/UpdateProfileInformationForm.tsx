@@ -1,15 +1,16 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import { Transition } from '@headlessui/react';
-import { Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import InputError from "@/Components/InputError";
+import InputLabel from "@/Components/InputLabel";
+import PrimaryButton from "@/Components/PrimaryButton";
+import TextInput from "@/Components/TextInput";
+import { Transition } from "@headlessui/react";
+import { Link, useForm, usePage } from "@inertiajs/react";
+import axios from "axios";
+import React, { FormEventHandler } from "react";
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
-    className = '',
+    className = "",
 }: {
     mustVerifyEmail: boolean;
     status?: string;
@@ -21,12 +22,46 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            zipcode: user.zipcode, // ADD
+            address: user.address, // ADD
         });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
+        patch(route("profile.update"));
+    };
+
+    // ADD: Function to handle zipcode change and fetch address
+    const handleZipcodeChange = async (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const zipcode = e.target.value;
+
+        if (/^\d{7}$/.test(zipcode)) {
+            try {
+                const response = await axios.get("/api/zipcode/search", {
+                    params: { zipcode },
+                });
+                if (response.data.results?.length > 0) {
+                    const result = response.data.results[0];
+                    setData(
+                        "address",
+                        `${result.address1}${result.address2}${result.address3}`
+                    );
+                } else {
+                    console.error("住所が見つかりませんでした。");
+                }
+            } catch (error) {
+                console.error("郵便番号検索に失敗しました:", error);
+            }
+        }
+    };
+
+    // ADD: Function to handle combined change for zipcode and address
+    const handleCombinedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setData("zipcode", e.target.value);
+        handleZipcodeChange(e);
     };
 
     return (
@@ -47,9 +82,9 @@ export default function UpdateProfileInformation({
 
                     <TextInput
                         id="name"
-                        className="mt-1 block w-full"
+                        className="block w-full mt-1"
                         value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
+                        onChange={(e) => setData("name", e.target.value)}
                         required
                         isFocused
                         autoComplete="name"
@@ -64,9 +99,9 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="email"
                         type="email"
-                        className="mt-1 block w-full"
+                        className="block w-full mt-1"
                         value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
+                        onChange={(e) => setData("email", e.target.value)}
                         required
                         autoComplete="username"
                     />
@@ -74,21 +109,49 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.email} />
                 </div>
 
+                {/* ADD zipcode input field. */}
+                <div>
+                    <InputLabel htmlFor="zipcode" value="Zipcode" />
+                    <TextInput
+                        id="zipcode"
+                        className="block w-full mt-1"
+                        value={data.zipcode}
+                        onChange={(e) => handleCombinedChange(e)}
+                        required
+                        autoComplete="zipcode"
+                    />
+                    <InputError className="mt-2" message={errors.zipcode} />
+                </div>
+
+                {/* ADD address input field. */}
+                <div>
+                    <InputLabel htmlFor="address" value="Address" />
+                    <TextInput
+                        id="address"
+                        className="block w-full mt-1"
+                        value={data.address}
+                        onChange={(e) => setData("address", e.target.value)}
+                        required
+                        autoComplete="address"
+                    />
+                    <InputError className="mt-2" message={errors.address} />
+                </div>
+
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
                         <p className="mt-2 text-sm text-gray-800">
                             Your email address is unverified.
                             <Link
-                                href={route('verification.send')}
+                                href={route("verification.send")}
                                 method="post"
                                 as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                className="text-sm text-gray-600 underline rounded-md hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             >
                                 Click here to re-send the verification email.
                             </Link>
                         </p>
 
-                        {status === 'verification-link-sent' && (
+                        {status === "verification-link-sent" && (
                             <div className="mt-2 text-sm font-medium text-green-600">
                                 A new verification link has been sent to your
                                 email address.
@@ -107,9 +170,7 @@ export default function UpdateProfileInformation({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
-                            Saved.
-                        </p>
+                        <p className="text-sm text-gray-600">Saved.</p>
                     </Transition>
                 </div>
             </form>
