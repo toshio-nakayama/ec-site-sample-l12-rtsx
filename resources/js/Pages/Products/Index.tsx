@@ -59,6 +59,25 @@ export default function Products({ products, successMessage, cartInfo }: Product
             onError: () => alert("カートへの追加に失敗しました。"),
         });
     };
+
+    const addCartPlus = (id: number) => {
+        form.post(route('products.plus', id), {
+            onError: () => alert("数量の追加に失敗しました。"),
+        });
+    };
+
+    const cartMinus = (id: number) => {
+        form.post(route('products.minus', id), {
+            onError: () => alert("数量の減少に失敗しました。"),
+        });
+    };
+
+    const removeCart = (id: number) => {
+        form.post(route('products.remove', id), {
+            onError: () => alert("カートからの削除に失敗しました。"),
+        });
+    };
+
     return (
         <Layout
             header={
@@ -148,7 +167,23 @@ export default function Products({ products, successMessage, cartInfo }: Product
                                                 <p className="font-bold">{item.name}</p>
                                                 <p>コード: {item.code}</p>
                                                 <p>価格: ￥{item.price}</p>
-                                                <p>数量: {item.quantity}個</p>
+                                                <p>
+                                                    数量: {item.quantity}個
+                                                    <button onClick={() => addCartPlus(Number(id))} className="
+                                                pointer-events-auto rounded-md bg-indigo-500 px-1 py-1 ml-2 text-[0.8125rem]/5 font-semibold text-white hover:bg-indigo-400 text-center">
+                                                        ＋
+                                                    </button>
+                                                    {item.quantity > 1 && (
+                                                        <button onClick={() => cartMinus(Number(id))} className="
+                                                pointer-events-auto rounded-md bg-indigo-500 px-1 py-1 ml-2 text-[0.8125rem]/5 font-semibold text-white hover:bg-indigo-400 text-center">
+                                                            －
+                                                        </button>
+                                                    )}
+                                                    <button onClick={() => removeCart(Number(id))} className="
+                                                pointer-events-auto rounded-md bg-red-500 px-1 py-1 ml-2 text-[0.8125rem]/5 font-semibold text-white hover:bg-red-400 text-center">
+                                                        削除
+                                                    </button>
+                                                </p>
                                             </div>
                                         </div>
                                     </li>

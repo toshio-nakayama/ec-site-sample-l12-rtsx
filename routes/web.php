@@ -29,6 +29,9 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index'); // ADD
 Route::post('/products/add/{id}', [ProductController::class, 'addToCart'])->name('products.add'); // ADD
+Route::post('/products/plus/{id}', [ProductController::class, 'addCartPlus'])->name('products.plus'); // ADD
+Route::post('/products/minus/{id}', [ProductController::class, 'cartMinus'])->name('products.minus'); // ADD
+Route::post('/products/removes/{id}', [ProductController::class, 'removeCart'])->name('products.remove'); // ADD
 Route::get('/api/zipcode/search', [ZipcodeController::class, 'search']); // ADD
 
 require __DIR__ . '/auth.php';
