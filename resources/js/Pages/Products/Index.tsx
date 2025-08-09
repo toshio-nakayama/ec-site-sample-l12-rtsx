@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
+import GuestLayout from "@/Layouts/GuestLayout2";
+import { Head, usePage } from "@inertiajs/react";
 
 interface Product {
     id: number;
@@ -15,8 +16,15 @@ interface ProductsProps {
 }
 
 export default function Products({ products }: ProductsProps) {
+    const { auth } = usePage().props;
+    console.log("Auth Information:", auth);
+    console.log(
+        "Authenticated User:",
+        auth.user ? auth.user : "No user authenticated"
+    );
+    const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
     return (
-        <AuthenticatedLayout
+        <Layout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     Products
@@ -34,63 +42,46 @@ export default function Products({ products }: ProductsProps) {
 
                 <div className="m-3 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="p-2 overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <table className="w-10/12 m-3 border border-gray-400 table-auto">
-                            <thead>
-                                <tr className="bg-gray-100">
-                                    <th className="w-12 px-4 py-2">ID</th>
-                                    <th className="w-48 px-4 py-2">商品</th>
-                                    <th className="px-4 py-2 w-28">コード</th>
-                                    <th className="px-4 py-2 text-center w-28">
-                                        価格
-                                    </th>
-                                    <th className="px-4 py-2 text-center w-28">
-                                        画像
-                                    </th>
-                                    <th className="px-4 py-2 text-center w-28">
-                                        アクティブ
-                                    </th>
-                                    <th className="px-4 py-2"></th>
-                                    <th className="px-4 py-2"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products.map((product) => {
-                                    return (
-                                        <tr key={product.id}>
-                                            <td className="px-4 py-2 text-center border border-gray-400">
-                                                {product.id}
-                                            </td>
-                                            <td className="px-4 py-2 border border-gray-400">
+                        <div className="grid grid-cols-3">
+                            {products.map((product) => {
+                                return (
+                                    <div
+                                        key={product.id}
+                                        className="grid items-center justify-center grid-cols-2 p-3 shadow-md"
+                                    >
+                                        <div>
+                                            <img
+                                                src={`/storage/img/${product.img}`}
+                                                alt={product.name}
+                                                className="object-cover w-32 h-32 mx-auto"
+                                            />
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl text-indigo-600">
                                                 {product.name}
-                                            </td>
-                                            <td className="px-4 py-2 text-center border border-gray-400">
+                                            </div>
+                                            <div className="text-teal-600">
                                                 {product.code}
-                                            </td>
-                                            <td className="px-4 py-2 text-right border border-gray-400">
-                                                {product.price}
-                                            </td>
-                                            <td className="px-4 py-2 text-right border border-gray-400">
-                                                <img
-                                                    src={`/storage/img/${product.img}`}
-                                                    alt={product.name}
-                                                    className="object-cover w-16 h-16 mx-auto"
-                                                />
-                                            </td>
-                                            <td className="px-4 py-2 text-right border border-gray-400">
-                                                {product.active == 1
-                                                    ? "在庫がありません"
-                                                    : "在庫あり"}
-                                            </td>
-                                            <td className="px-4 py-2 text-center border border-gray-400"></td>
-                                            <td className="px-4 py-2 text-center border border-gray-400"></td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                            </div>
+                                            <div className="text-3xl">
+                                                ￥{product.price}
+                                            </div>
+                                            <button
+                                                onClick={() =>
+                                                    addToCart(product.id)
+                                                }
+                                                className="pointer-events-auto rounded-md bg-indigo-500 px-2 py-2 my-2 text-[0.8125rem]/5 font-semibold text-white hover:bg-indigo-400 w-2/3 text-center"
+                                            >
+                                                カートに入れる
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </Layout>
     );
 }
