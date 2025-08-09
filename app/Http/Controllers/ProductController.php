@@ -16,9 +16,11 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        // dd($products); // Debugging line to check products
+        $cart = session()->get('cart', []);
+        $totalPrice = array_reduce($cart, fn($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
         return Inertia::render('Products/Index', [
             'products' => $products,
+            'totalPrice' => $totalPrice,
         ]);
     }
 
