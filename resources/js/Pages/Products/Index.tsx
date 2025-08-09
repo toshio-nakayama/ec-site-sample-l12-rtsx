@@ -1,6 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import GuestLayout from "@/Layouts/GuestLayout2";
 import { Head, usePage } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 
 interface Product {
     id: number;
@@ -11,11 +12,21 @@ interface Product {
     active: number;
 }
 
-interface ProductsProps {
-    products: Product[];
+interface CartItem {
+    name: string;
+    price: number;
+    code: string;
+    img: string;
+    quantity: number;
 }
 
-export default function Products({ products }: ProductsProps) {
+interface ProductsProps {
+    products: Product[];
+    successMessage?: string;
+    cartInfo?: {[id: string]: CartItem}; // idをキーとしたCartItemのオブジェクト
+}
+
+export default function Products({ products, successMessage, cartInfo }: ProductsProps) {
     const { auth } = usePage().props;
     console.log("Auth Information:", auth);
     console.log(
@@ -23,6 +34,17 @@ export default function Products({ products }: ProductsProps) {
         auth.user ? auth.user : "No user authenticated"
     );
     const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
+
+    const form = useForm<{ id: number }>({
+        id: 0,
+    });
+
+    const addToCart = (id: number) => {
+        form.post(route('products.add', id), {
+            // onSuccess: () => alert("商品がカートに追加されました!"),
+            onError: () => alert("カートへの追加に失敗しました。"),
+        });
+    };
     return (
         <Layout
             header={
@@ -36,6 +58,39 @@ export default function Products({ products }: ProductsProps) {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        {/* カートの中身をUIに表示する例 */}
+                        {cartInfo && Object.keys(cartInfo).length > 0 ? (
+                            <div>
+                                <h3>カートの中身:</h3>
+                                <ul>
+                                    {Object.entries(cartInfo).map(([id, item]) => (
+                                        <li key={id} className="p-3 border-b">
+                                            <div className="flex items-center">
+                                                <img
+                                                    src={`/storage/img/${item.img}`}
+                                                    alt={item.name}
+                                                    className="object-cover w-16 h-16 mr-4"
+                                                />
+                                                <div>
+                                                    <p className="font-bold">{item.name}</p>
+                                                    <p>コード: {item.code}</p>
+                                                    <p>価格: ￥{item.price}</p>
+                                                    <p>数量: {item.quantity}個</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
+                            <p>カートは空です。</p>
+                        )}
+                        {/* メッセージの表示 */}
+                        {successMessage && (
+                            <div className="px-4 py-3 m-3 text-green-700 bg-green-100 border border-green-400 rounded">
+                                {successMessage}
+                            </div>
+                        )}
                         <div className="p-6 text-gray-900">商品一覧</div>
                     </div>
                 </div>

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ProductController extends Controller
 {
@@ -18,6 +20,31 @@ class ProductController extends Controller
         return Inertia::render('Products/Index', [
             'products' => $products,
         ]);
+    }
+
+    public function addToCart($id)
+    {
+        $product = Product::find($id);
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity']++;
+        } else {
+            $cart[$id] = [
+                'name' => $product->name,
+                'price' => $product->price,
+                'code' => $product->code,
+                'img' => $product->img,
+                'quantity' => 1,
+            ];
+        }
+
+        session()->put('cart', $cart);
+        // return response()->json([
+        //     'message' => '商品をカートに追加しました。',
+        //     'cart' => $cart,
+        // ]);
+        return redirect()->route('products.index')->with('success', '商品をカートに追加しました');
     }
 
     /**
