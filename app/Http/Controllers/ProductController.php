@@ -112,7 +112,8 @@ class ProductController extends Controller
         if ($method === 'cash_on_delivery') {
             return redirect('/checkout/cash-on-delivery');
         } elseif ($method === 'stripe') {
-            return redirect('/checkout/stripe');
+            // return redirect('/checkout/stripe');
+            return Inertia::location('/checkout/stripe');
         }
 
         return back();
