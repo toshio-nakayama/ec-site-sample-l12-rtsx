@@ -36,6 +36,7 @@ Route::post('/products/removes/{id}', [ProductController::class, 'removeCart'])-
 Route::get('/checkout/step1', [ProductController::class, 'step1'])->name('checkout.step1'); // ADD
 Route::post('/checkout/confirm', [ProductController::class, 'confirm']); // ADD
 Route::get('/checkout/cash-on-delivery', [ProductController::class, 'cashOnDelivery']); // ADD
+Route::post('/checkout/order-done', [ProductController::class, 'orderDone'])->name('checkout.order_done'); // ADD
 
 Route::get('/api/zipcode/search', [ZipcodeController::class, 'search']); // ADD
 

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Mail;
 
 class ProductController extends Controller
 {
@@ -123,6 +124,26 @@ class ProductController extends Controller
             'user' => $user,
             'totalPrice' => $totalPrice,
         ]);
+    }
+
+    public function orderDone(Request $request)
+    {
+        // ユーザー情報とカート情報を取得
+        $cart = session()->get('cart', []);
+        $user = Auth::user();
+
+        // 合計金額を計算
+        $totalPrice = array_reduce($cart, fn ($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
+
+        // 管理者とユーザーにメールを送信
+        Mail::to($user->email)->send(new \App\Mail\OrderConfirmationMail($user, $cart, $totalPrice));
+        Mail::to('admin@web.work')->send(new \App\Mail\AdminOrderNotificationMail($user, $cart, $totalPrice));
+
+        // カートをクリア
+        session()->forget('cart');
+
+        // 注文完了ページにリダイレクト
+        return Inertia::render('Checkout/OrderComplete');
     }
 
     /**

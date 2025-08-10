@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 interface CartItem {
     name: string;
@@ -25,6 +26,14 @@ interface Step1Props {
 }
 
 export default function CashOnDelivery({ user, cartInfo, totalPrice, selectedPaymentMethodInfo }: Step1Props) {
+    const orderDone = () => {
+        router.post('/checkout/order-done', {}, {
+            onSuccess: () => {
+                alert('注文が確定されました。');
+            },
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800">ご注文の確認</h2>}
@@ -36,7 +45,7 @@ export default function CashOnDelivery({ user, cartInfo, totalPrice, selectedPay
                     <div className="px-10 py-4 overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="mb-6">内容をご確認の上、「注文を確定する」ボタンをクリックしてください。</div>
                         <button
-                            onClick={() => OrderDone('cash_on_delivery')}
+                            onClick={() => orderDone()}
                             className="w-64 p-3 font-semibold text-white bg-indigo-500 rounded-md hover:bg-indigo-400"
                         >
                             注文を確定する
