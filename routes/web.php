@@ -31,6 +31,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/stripe', [StripeController::class, 'createSession']);
     Route::get('/checkout/stripe/success', [StripeController::class, 'success'])->name('stripe.success');
     Route::get('/checkout/stripe/cancel', [StripeController::class, 'cancel'])->name('stripe.cancel');
+
+    Route::get('/checkout/step1', [ProductController::class, 'step1'])->name('checkout.step1'); // ADD
+    Route::post('/checkout/confirm', [ProductController::class, 'confirm']); // ADD
+    Route::get('/checkout/cash-on-delivery', [ProductController::class, 'cashOnDelivery']); // ADD
+    Route::post('/checkout/order-done', [ProductController::class, 'orderDone'])->name('checkout.order_done'); // ADD
+    Route::get('/orders/history', [OrderController::class, 'history'])->name('orders.history')->middleware('auth');
 });
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index'); // ADD
@@ -39,12 +45,12 @@ Route::post('/products/plus/{id}', [ProductController::class, 'addCartPlus'])->n
 Route::post('/products/minus/{id}', [ProductController::class, 'cartMinus'])->name('products.minus'); // ADD
 Route::post('/products/removes/{id}', [ProductController::class, 'removeCart'])->name('products.remove'); // ADD
 
-Route::get('/checkout/step1', [ProductController::class, 'step1'])->name('checkout.step1'); // ADD
-Route::post('/checkout/confirm', [ProductController::class, 'confirm']); // ADD
-Route::get('/checkout/cash-on-delivery', [ProductController::class, 'cashOnDelivery']); // ADD
-Route::post('/checkout/order-done', [ProductController::class, 'orderDone'])->name('checkout.order_done'); // ADD
-Route::get('/orders/history', [OrderController::class, 'history'])->name('orders.history')->middleware('auth');
-
 Route::get('/api/zipcode/search', [ZipcodeController::class, 'search']); // ADD
+// Route::get('/checkout/step1', [ProductController::class, 'step1'])->name('checkout.step1'); // ADD
+// Route::post('/checkout/confirm', [ProductController::class, 'confirm']); // ADD
+// Route::get('/checkout/cash-on-delivery', [ProductController::class, 'cashOnDelivery']); // ADD
+// Route::post('/checkout/order-done', [ProductController::class, 'orderDone'])->name('checkout.order_done'); // ADD
+// Route::get('/orders/history', [OrderController::class, 'history'])->name('orders.history')->middleware('auth');
+
 
 require __DIR__ . '/auth.php';
