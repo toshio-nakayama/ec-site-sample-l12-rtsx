@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StripeController;
@@ -42,6 +43,7 @@ Route::get('/checkout/step1', [ProductController::class, 'step1'])->name('checko
 Route::post('/checkout/confirm', [ProductController::class, 'confirm']); // ADD
 Route::get('/checkout/cash-on-delivery', [ProductController::class, 'cashOnDelivery']); // ADD
 Route::post('/checkout/order-done', [ProductController::class, 'orderDone'])->name('checkout.order_done'); // ADD
+Route::get('/orders/history', [OrderController::class, 'history'])->name('orders.history')->middleware('auth');
 
 Route::get('/api/zipcode/search', [ZipcodeController::class, 'search']); // ADD
 
