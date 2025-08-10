@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use App\Models\Order;
+use App\Models\OrderItem;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -128,22 +132,63 @@ class ProductController extends Controller
 
     public function orderDone(Request $request)
     {
-        // ユーザー情報とカート情報を取得
-        $cart = session()->get('cart', []);
-        $user = Auth::user();
+        try {
+            // トランザクション開始
+            DB::beginTransaction();
 
-        // 合計金額を計算
-        $totalPrice = array_reduce($cart, fn ($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
+            // カート情報とユーザー情報を取得
+            $cart = session()->get('cart', []);
+            $user = Auth::user();
 
-        // 管理者とユーザーにメールを送信
-        Mail::to($user->email)->send(new \App\Mail\OrderConfirmationMail($user, $cart, $totalPrice));
-        Mail::to('admin@web.work')->send(new \App\Mail\AdminOrderNotificationMail($user, $cart, $totalPrice));
+            if (empty($cart)) {
+                return redirect()->back();
+            }
 
-        // カートをクリア
-        session()->forget('cart');
+            // 合計金額を計算
+            $totalPrice = array_reduce($cart, function ($sum, $item) {
+                return $sum + ($item['price'] * $item['quantity']);
+            }, 0);
 
-        // 注文完了ページにリダイレクト
-        return Inertia::render('Checkout/OrderComplete');
+            // 注文情報を保存
+            $order = Order::create([
+                'user_id' => $user->id,
+                'payment_method' => $request->input('payment_method', 'cash_on_delivery'), // 支払い方法
+                'total_price' => $totalPrice,
+            ]);
+
+            // 注文詳細を保存
+            foreach ($cart as $productId => $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $productId,
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                ]);
+            }
+
+            // 管理者とユーザーにメールを送信
+            Mail::to($user->email)->send(new \App\Mail\OrderConfirmationMail($user, $cart, $totalPrice));
+            Mail::to('admin@web.work')->send(new \App\Mail\AdminOrderNotificationMail($user, $cart, $totalPrice));
+
+            // カートをクリア
+            session()->forget('cart');
+
+            // トランザクションをコミット
+            DB::commit();
+
+            // 注文完了画面にリダイレクト
+            return Inertia::render('Checkout/OrderComplete');
+        } catch (\Exception $e) {
+            // トランザクションをロールバック
+            DB::rollBack();
+
+            // エラーログを記録
+            Log::error('注文処理エラー: ' . $e->getMessage());
+
+            return Inertia::render('Checkout/OrderComplete', [
+                'error' => '注文処理中にエラーが発生しました。',
+            ]);
+        }
     }
 
     /**
