@@ -26,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share([
             'successMessage' => fn () => session('success'),
             'cartInfo' => fn () => session('cart', []),
+            'selectedPaymentMethodInfo' => fn () => session('selectedPaymentMethod'),
         ]);
     }
 }

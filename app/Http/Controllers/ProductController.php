@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -82,6 +83,46 @@ class ProductController extends Controller
         }
         session()->put('cart', $cart);
         return redirect()->route('products.index');
+    }
+
+    public function step1()
+    {
+        // ユーザーがログインしているか確認
+        $user = Auth::user();
+        $cart = session()->get('cart', []);
+        $totalPrice = array_reduce($cart, fn($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
+        // Inertiaを使用してビューをレンダリング
+        return Inertia::render('Checkout/Step1', [
+            'user' => $user,
+            'totalPrice' => $totalPrice,
+        ]);
+    }
+
+    public function confirm(Request $request)
+    {
+        // dd($request->all());
+        $method = $request->input('method');
+        session()->put('selectedPaymentMethod', $method);
+        //dd($method);
+        if ($method === 'cash_on_delivery') {
+            return redirect('/checkout/cash-on-delivery');
+        } elseif ($method === 'stripe') {
+            return redirect('/checkout/stripe');
+        }
+
+        return back();
+    }
+
+    public function cashOnDelivery()
+    {
+        $user = Auth::user();
+        $cart = session()->get('cart', []);
+        $totalPrice = array_reduce($cart, fn($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
+        //dd($method);
+        return Inertia::render('Checkout/CashOnDelivery', [
+            'user' => $user,
+            'totalPrice' => $totalPrice,
+        ]);
     }
 
     /**

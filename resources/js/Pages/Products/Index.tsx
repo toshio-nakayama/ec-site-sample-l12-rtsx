@@ -6,6 +6,7 @@ import Modal from "@/Components/Modal";
 import SecondaryButton from "@/Components/SecondaryButton";
 import DangerButton from "@/Components/DangerButton";
 import { useState } from 'react';
+import { router } from '@inertiajs/react';
 
 interface Product {
     id: number;
@@ -79,6 +80,14 @@ export default function Products({ products, successMessage, cartInfo, totalPric
         form.post(route('products.remove', id), {
             onError: () => alert("カートからの削除に失敗しました。"),
         });
+    };
+
+    const checkout = () => {
+        if (auth?.user) {
+            router.visit('/checkout/step1')
+        } else {
+            router.visit('/register')
+        }
     };
 
     return (
@@ -203,6 +212,11 @@ export default function Products({ products, successMessage, cartInfo, totalPric
                                     </li>
                                 ))}
                             </ul>
+                            <div className='text-center'>
+                                <button onClick={() => checkout()} className="w-2/3 px-2 py-2 my-2 font-semibold text-center text-white bg-indigo-500 rounded-md pointer-events-auto hover:bg-indigo-400">
+                                    精算に進む
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <p className="mt-4 text-gray-600">カートは空です。</p>

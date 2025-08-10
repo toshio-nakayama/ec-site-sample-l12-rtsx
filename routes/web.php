@@ -32,6 +32,11 @@ Route::post('/products/add/{id}', [ProductController::class, 'addToCart'])->name
 Route::post('/products/plus/{id}', [ProductController::class, 'addCartPlus'])->name('products.plus'); // ADD
 Route::post('/products/minus/{id}', [ProductController::class, 'cartMinus'])->name('products.minus'); // ADD
 Route::post('/products/removes/{id}', [ProductController::class, 'removeCart'])->name('products.remove'); // ADD
+
+Route::get('/checkout/step1', [ProductController::class, 'step1'])->name('checkout.step1'); // ADD
+Route::post('/checkout/confirm', [ProductController::class, 'confirm']); // ADD
+Route::get('/checkout/cash-on-delivery', [ProductController::class, 'cashOnDelivery']); // ADD
+
 Route::get('/api/zipcode/search', [ZipcodeController::class, 'search']); // ADD
 
 require __DIR__ . '/auth.php';
